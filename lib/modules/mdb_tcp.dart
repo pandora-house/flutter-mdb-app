@@ -213,7 +213,7 @@ class Modbus {
 
       for (int i = 0; i < data.length; i++) {
         startAddr = (getStartAddr() + i).toString();
-        data[i] = startAddr + '_' + data[i];
+        data[i] = '${startAddr}_${data[i]}';
       }
     } else if (isType16) {
       byteStart = 10;
@@ -245,9 +245,9 @@ class Modbus {
         startAddr = (getStartAddr() + j).toString();
 
         hexData =
-            _utils.getByteHex(response[i - 1]) + _utils.getByteHex(response[i]);
+            '${_utils.getByteHex(response[i - 1])}_${_utils.getByteHex(response[i])}';
 
-        data[j] = startAddr + '_' + data[j] + '_' + hexData;
+        data[j] = '${startAddr}_${data[j]}_$hexData';
       }
     } else if (isType32) {
       byteStart = 12;
@@ -304,7 +304,7 @@ class Modbus {
             _utils.getByteHex(response[i - 1]) +
             _utils.getByteHex(response[i]);
 
-        data[j] = startAddr + '_' + data[j] + '_' + hexData;
+        data[j] = '${startAddr}_${data[j]}_$hexData';
       }
     }
 
