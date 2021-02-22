@@ -161,7 +161,7 @@ class Modbus {
     var list = List<String>(bits);
     var mask = 1 << (bits - 1);
     for (var i = 0; i < bits; i++, mask >>= 1) {
-      list[i] = (val & mask != 0).toString() + '_' + _utils.getByteHex(val);
+      list[i] = '${(val & mask != 0)}_${_utils.getByteHex(val)}';
     }
     return reverseList(list);
   }
