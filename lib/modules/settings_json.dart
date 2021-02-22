@@ -1,7 +1,7 @@
 class SettingsJson {
   SettingsJson();
   String getSettings() => _settingsJson;
-  String _settingsJson = '''{
+  final String _settingsJson = '''{
       "IP":{
         "value":"127.0.0.1"
       },
