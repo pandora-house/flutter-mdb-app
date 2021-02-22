@@ -86,17 +86,17 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
                   children: [
                     Expanded(
                       child: ListView(
-                        physics: _data['error'].toString().length > 0
+                        physics: _data['error'].toString().isNotEmpty
                             ? const NeverScrollableScrollPhysics()
                             : const AlwaysScrollableScrollPhysics(),
                         children: [
                           _cardTransaction(_data),
-                          if (_data['error'].toString().length == 0)
+                          if (_data['error'].toString().isEmpty)
                             _gridviewData(_data, _socketBloc),
                         ],
                       ),
                     ),
-                    if (_data['error'].toString().length > 0)
+                    if (_data['error'].toString().isNotEmpty)
                       Expanded(
                         child: Container(
                           child: Text(
@@ -106,8 +106,8 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
                           ),
                         ),
                       ),
-                    if (_data['value'].length == 0 &&
-                        _data['error'].toString().length == 0)
+                    if (_data['value'].isEmpty &&
+                        _data['error'].toString().isEmpty)
                       Expanded(
                           child: Column(
                         children: [

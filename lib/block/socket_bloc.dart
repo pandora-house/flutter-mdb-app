@@ -64,7 +64,7 @@ class SocketBloc {
           "counters": [_txCounter, _mdbErrCounter]
         };
 
-        if (mdb.getError(data).isNotEmpty) {
+        if (_data['error'].isNotEmpty) {
           _mdbErrCounter++;
         }
 
