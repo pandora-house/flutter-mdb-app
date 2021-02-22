@@ -101,7 +101,7 @@ class SocketBloc {
   init() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String _settSharedPref =
-        (prefs.getString('settings') ?? new SettingsJson().getSettings());
+        (prefs.getString('settings') ?? new SettingsJson().settingsJson);
     _settings = jsonDecode(_settSharedPref);
     mdb = Modbus(_settings);
   }

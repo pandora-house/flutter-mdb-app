@@ -15,7 +15,7 @@ class SettingsWidget extends StatefulWidget {
 }
 
 class _SettingsWidgetState extends State<SettingsWidget> {
-  String _jsonStr = new SettingsJson().getSettings();
+  String _jsonStr = new SettingsJson().settingsJson;
 
   TextEditingController _controllerTextEdit = TextEditingController();
 
