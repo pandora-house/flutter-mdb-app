@@ -298,11 +298,8 @@ class Modbus {
 
         startAddr = (getStartAddr() + j * 2).toString();
 
-        hexData = _utils.getByteHex(response[i - 3]) +
-            _utils.getByteHex(response[i - 2]) +
-            ' ' +
-            _utils.getByteHex(response[i - 1]) +
-            _utils.getByteHex(response[i]);
+        hexData =
+            '${_utils.getByteHex(response[i - 3])}${_utils.getByteHex(response[i - 2])} ${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
         data[j] = '${startAddr}_${data[j]}_$hexData';
       }
