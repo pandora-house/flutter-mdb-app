@@ -308,6 +308,8 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
     TextEditingController _controllerTextEdit = TextEditingController();
     String addr = item[0];
     String value = item[1];
+    String addrWrite = item[3];
+    
     _controllerTextEdit.text = value;
 
     int byteOnOf = 0;
@@ -401,7 +403,7 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
                 if (!_formKey.currentState.validate()) {
                   return;
                 }
-                int add = int.parse(addr);
+                int add = int.parse(addrWrite);
 
                 bloc.getSettings['Function']['value'] == 'F01 coil status (0x)'
                     ? val = byteOnOf

@@ -95,6 +95,8 @@ class Modbus {
       bytesFrame.setUint8(11, value);
     }
 
+    print(addr);
+
     return _request;
   }
 
@@ -149,6 +151,22 @@ class Modbus {
     return err;
   }
 
+  String _startAddrHeader(int indx) {
+    if (getFunc() == 'F01 coil status (0x)') {
+      return (getStartAddr() + indx).toString().padLeft(5, "0");
+    } else if (getFunc() == 'F02 input status (1x)') {
+      return '1${(getStartAddr() + indx).toString().padLeft(4, "0")}';
+    } else if (getFunc() == 'F03 holding register (4x)') {
+      return '4${(getStartAddr() + indx).toString().padLeft(4, "0")}';
+    } else {
+      return '3${(getStartAddr() + indx).toString().padLeft(4, "0")}';
+    }
+  }
+
+  String _startAddrWrite(int indx) {
+    return (getStartAddr() + indx).toString();
+  }
+
   List<String> reverseList(var list) {
     List<String> listTmp = List();
     for (var i = 0; i < list.length; i++) {
@@ -176,7 +194,7 @@ class Modbus {
     int byteCount = (response[8] & 0xFF).toInt();
     int arrSize, byteStart, step;
     List<String> data;
-    String startAddr, hexData;
+    String hexData;
 
     bool isTypeBool = getFunc() == 'F01 coil status (0x)' ||
         getFunc() == 'F02 input status (1x)';
@@ -212,8 +230,7 @@ class Modbus {
       }
 
       for (int i = 0; i < data.length; i++) {
-        startAddr = (getStartAddr() + i).toString();
-        data[i] = '${startAddr}_${data[i]}';
+        data[i] = '${_startAddrHeader(i)}_${data[i]}_${_startAddrWrite(i)}';
       }
     } else if (isType16) {
       byteStart = 10;
@@ -242,12 +259,10 @@ class Modbus {
             break;
         }
 
-        startAddr = (getStartAddr() + j).toString();
-
         hexData =
             '${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
-        data[j] = '${startAddr}_${data[j]}_$hexData';
+        data[j] = '${_startAddrHeader(j)}_${data[j]}_${hexData}_${_startAddrWrite(j)}';
       }
     } else if (isType32) {
       byteStart = 12;
@@ -296,12 +311,10 @@ class Modbus {
             break;
         }
 
-        startAddr = (getStartAddr() + j * 2).toString();
-
         hexData =
             '${_utils.getByteHex(response[i - 3])}${_utils.getByteHex(response[i - 2])} ${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
-        data[j] = '${startAddr}_${data[j]}_$hexData';
+        data[j] = '${_startAddrHeader(j * 2)}_${data[j]}_${hexData}_${_startAddrWrite(j * 2)}';
       }
     }
 
