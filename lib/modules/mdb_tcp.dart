@@ -167,7 +167,7 @@ class Modbus {
   }
 
   List<String> getData(List<int> response) {
-    if (getError(response).isEmpty) {
+    if (getError(response).isNotEmpty) {
       return [];
     }
 
