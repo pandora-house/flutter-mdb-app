@@ -245,7 +245,7 @@ class Modbus {
         startAddr = (getStartAddr() + j).toString();
 
         hexData =
-            '${_utils.getByteHex(response[i - 1])}_${_utils.getByteHex(response[i])}';
+            '${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
         data[j] = '${startAddr}_${data[j]}_$hexData';
       }
