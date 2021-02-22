@@ -165,8 +165,9 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
           onTap: () {
             bool showPopup = (bloc.getSettings['Function']['value'] ==
                         'F01 coil status (0x)' ||
-                    bloc.getSettings['Function']['value'] ==
-                        'F03 holding register (4x)') &&
+                    (bloc.getSettings['Function']['value'] ==
+                            'F03 holding register (4x)') &&
+                        bloc.mdb.getDataType().contains('16')) &&
                 bloc.getConnect;
             if (showPopup) {
               _popUpDialog(bloc, item);
@@ -287,8 +288,7 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
                                 style: Theme.of(context).textTheme.subtitle1),
                             if (_data['error'].toString().length > 0)
                               Text('-${data['counters'][COUNTER_ERR]}',
-                                  style:
-                                      Theme.of(context).textTheme.headline3),
+                                  style: Theme.of(context).textTheme.headline3),
                           ],
                         ),
                       ),
@@ -309,7 +309,7 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
     String addr = item[0];
     String value = item[1];
     String addrWrite = item[3];
-    
+
     _controllerTextEdit.text = value;
 
     int byteOnOf = 0;
