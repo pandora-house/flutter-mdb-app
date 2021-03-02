@@ -9,7 +9,7 @@ import 'package:test_app/modules/settings_json.dart';
 import 'package:test_app/modules/utils.dart';
 
 class SocketBloc {
-  bool _connect = false;
+  bool connecting = false;
   int _txCounter = 0;
   int _mdbErrCounter = 0;
 
@@ -34,7 +34,6 @@ class SocketBloc {
     _socketEventController.stream.listen(_mapEventToState);
   }
 
-  bool get getConnect => _connect;
   Map<String, dynamic> get getSettings => _settings;
 
   void _mapEventToState(SocketEvent event) {
@@ -50,7 +49,7 @@ class SocketBloc {
   void connect() async {
     _txCounter = 0;
     _mdbErrCounter = 0;
-    _connect = true;
+    connecting = true;
 
     await Socket.connect(mdb.getIp(), mdb.getPort(),
             timeout: Duration(milliseconds: mdb.getTimeOut()))
@@ -69,6 +68,8 @@ class SocketBloc {
         }
 
         _socketSink.add(jsonEncode(_data));
+
+        connecting = false;
       }).onError((e) {
         close();
         _socketSink.addError(e);
@@ -89,16 +90,11 @@ class SocketBloc {
   }
 
   void sockWrite(int addr, int value) {
-    _socketConnected.add(mdb.getRequestWrite(addr, value));
+    if (_socketConnected != null)
+      _socketConnected.add(mdb.getRequestWrite(addr, value));
   }
 
-  void close() {
-    _timer?.cancel();
-    _socketConnected?.close();
-    _connect = false;
-  }
-
-  init() async {
+  void init() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String _settSharedPref =
         (prefs.getString('settings') ?? new SettingsJson().settingsJson);
@@ -106,8 +102,14 @@ class SocketBloc {
     mdb = Modbus(_settings);
   }
 
+  void close() {
+    _timer?.cancel();
+    _socketConnected?.close();
+    _socketConnected = null;
+    connecting = false;
+  }
+
   void dispose() {
-    close();
     _socketStateController.close();
     _socketEventController.close();
   }
