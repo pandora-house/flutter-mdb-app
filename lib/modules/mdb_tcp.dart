@@ -5,6 +5,7 @@ import 'package:test_app/modules/utils.dart';
 class Modbus {
   Map<String, dynamic> _map;
   Utils _utils = Utils();
+  String errData = '';
 
   Modbus(this._map);
 
@@ -104,6 +105,10 @@ class Modbus {
     String err = '';
     const BYTE_ERR = 7;
     const BYTE_ERR_CODE = 8;
+
+    if (response.length < 9) return 'Unknown error';
+    if (errData.isNotEmpty) return errData;
+
     bool error = (response[BYTE_ERR] == 128 ||
                 response[BYTE_ERR] == 129 ||
                 response[BYTE_ERR] == 130 ||
@@ -206,116 +211,123 @@ class Modbus {
         (getFunc() == 'F03 holding register (4x)' ||
             getFunc() == 'F04 input register (3x)');
 
-    if (isTypeBool) {
-      byteStart = 9;
-      arrSize = (byteCount);
-      data = new List();
+    try {
+      errData = '';
+      if (isTypeBool) {
+        byteStart = 9;
+        arrSize = (byteCount);
+        data = new List();
 
-      const BYTES_QUANT = 8;
-      int remainder = (byteCount * BYTES_QUANT) % getQuantity();
+        const BYTES_QUANT = 8;
+        int remainder = (byteCount * BYTES_QUANT) % getQuantity();
 
-      if (byteCount == 1) {
-        var listTmp = asBools(response[byteStart], getQuantity());
-        data.addAll(listTmp);
-      } else {
-        for (int i = byteStart; i < (byteStart + byteCount); i++) {
-          if (i != (byteStart + byteCount) - 1) {
-            var listTmp = asBools(response[i], 8);
-            data.addAll(listTmp);
-          } else {
-            var listTmp = asBools(response[i], 8 - remainder);
-            data.addAll(listTmp);
+        if (byteCount == 1) {
+          var listTmp = asBools(response[byteStart], getQuantity());
+          data.addAll(listTmp);
+        } else {
+          for (int i = byteStart; i < (byteStart + byteCount); i++) {
+            if (i != (byteStart + byteCount) - 1) {
+              var listTmp = asBools(response[i], 8);
+              data.addAll(listTmp);
+            } else {
+              var listTmp = asBools(response[i], 8 - remainder);
+              data.addAll(listTmp);
+            }
           }
         }
-      }
 
-      for (int i = 0; i < data.length; i++) {
-        data[i] = '${_startAddrHeader(i)}_${data[i]}_${_startAddrWrite(i)}';
-      }
-    } else if (isType16) {
-      byteStart = 10;
-      arrSize = (byteCount ~/ 2);
-      data = new List(arrSize);
-      step = 2;
-      for (int i = byteStart, j = 0;
-          i < (byteStart + byteCount);
-          i += step, j++) {
-        switch (getDataType()) {
-          case 'UInt16AB':
-            buff = Uint8List.fromList([response[i - 1], response[i]]).buffer;
-            data[j] = ByteData.view(buff).getUint16(0).toString();
-            break;
-          case 'UInt16BA':
-            buff = Uint8List.fromList([response[i], response[i - 1]]).buffer;
-            data[j] = ByteData.view(buff).getUint16(0).toString();
-            break;
-          case 'Int16AB':
-            buff = Uint8List.fromList([response[i - 1], response[i]]).buffer;
-            data[j] = ByteData.view(buff).getInt16(0).toString();
-            break;
-          case 'Int16BA':
-            buff = Uint8List.fromList([response[i], response[i - 1]]).buffer;
-            data[j] = ByteData.view(buff).getInt16(0).toString();
-            break;
+        for (int i = 0; i < data.length; i++) {
+          data[i] = '${_startAddrHeader(i)}_${data[i]}_${_startAddrWrite(i)}';
         }
+      } else if (isType16) {
+        byteStart = 10;
+        arrSize = (byteCount ~/ 2);
+        data = new List(arrSize);
+        step = 2;
+        for (int i = byteStart, j = 0;
+            i < (byteStart + byteCount);
+            i += step, j++) {
+          switch (getDataType()) {
+            case 'UInt16AB':
+              buff = Uint8List.fromList([response[i - 1], response[i]]).buffer;
+              data[j] = ByteData.view(buff).getUint16(0).toString();
+              break;
+            case 'UInt16BA':
+              buff = Uint8List.fromList([response[i], response[i - 1]]).buffer;
+              data[j] = ByteData.view(buff).getUint16(0).toString();
+              break;
+            case 'Int16AB':
+              buff = Uint8List.fromList([response[i - 1], response[i]]).buffer;
+              data[j] = ByteData.view(buff).getInt16(0).toString();
+              break;
+            case 'Int16BA':
+              buff = Uint8List.fromList([response[i], response[i - 1]]).buffer;
+              data[j] = ByteData.view(buff).getInt16(0).toString();
+              break;
+          }
 
-        hexData =
-            '${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
+          hexData =
+              '${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
-        data[j] = '${_startAddrHeader(j)}_${data[j]}_${hexData}_${_startAddrWrite(j)}';
-      }
-    } else if (isType32) {
-      byteStart = 12;
-      arrSize = (byteCount ~/ 4);
-      data = new List(arrSize);
-      step = 4;
-      for (int i = byteStart, j = 0;
-          i < (byteStart + byteCount);
-          i += step, j++) {
-        switch (getDataType()) {
-          case 'Float32ABCD':
-            buff = Uint8List.fromList([
-              response[i - 3],
-              response[i - 2],
-              response[i - 1],
-              response[i]
-            ]).buffer;
-            data[j] = ByteData.view(buff).getFloat32(0).toString();
-            break;
-          case 'Float32CDAB':
-            buff = Uint8List.fromList([
-              response[i - 1],
-              response[i],
-              response[i - 3],
-              response[i - 2]
-            ]).buffer;
-            data[j] = ByteData.view(buff).getFloat32(0).toString();
-            break;
-          case 'Float32DCBA':
-            buff = Uint8List.fromList([
-              response[i],
-              response[i - 1],
-              response[i - 2],
-              response[i - 3]
-            ]).buffer;
-            data[j] = ByteData.view(buff).getFloat32(0).toString();
-            break;
-          case 'Float32BADC':
-            buff = Uint8List.fromList([
-              response[i - 2],
-              response[i - 3],
-              response[i],
-              response[i - 1]
-            ]).buffer;
-            data[j] = ByteData.view(buff).getFloat32(0).toString();
-            break;
+          data[j] =
+              '${_startAddrHeader(j)}_${data[j]}_${hexData}_${_startAddrWrite(j)}';
         }
+      } else if (isType32) {
+        byteStart = 12;
+        arrSize = (byteCount ~/ 4);
+        data = new List(arrSize);
+        step = 4;
+        for (int i = byteStart, j = 0;
+            i < (byteStart + byteCount);
+            i += step, j++) {
+          switch (getDataType()) {
+            case 'Float32ABCD':
+              buff = Uint8List.fromList([
+                response[i - 3],
+                response[i - 2],
+                response[i - 1],
+                response[i]
+              ]).buffer;
+              data[j] = ByteData.view(buff).getFloat32(0).toString();
+              break;
+            case 'Float32CDAB':
+              buff = Uint8List.fromList([
+                response[i - 1],
+                response[i],
+                response[i - 3],
+                response[i - 2]
+              ]).buffer;
+              data[j] = ByteData.view(buff).getFloat32(0).toString();
+              break;
+            case 'Float32DCBA':
+              buff = Uint8List.fromList([
+                response[i],
+                response[i - 1],
+                response[i - 2],
+                response[i - 3]
+              ]).buffer;
+              data[j] = ByteData.view(buff).getFloat32(0).toString();
+              break;
+            case 'Float32BADC':
+              buff = Uint8List.fromList([
+                response[i - 2],
+                response[i - 3],
+                response[i],
+                response[i - 1]
+              ]).buffer;
+              data[j] = ByteData.view(buff).getFloat32(0).toString();
+              break;
+          }
 
-        hexData =
-            '${_utils.getByteHex(response[i - 3])}${_utils.getByteHex(response[i - 2])} ${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
+          hexData =
+              '${_utils.getByteHex(response[i - 3])}${_utils.getByteHex(response[i - 2])} ${_utils.getByteHex(response[i - 1])}${_utils.getByteHex(response[i])}';
 
-        data[j] = '${_startAddrHeader(j * 2)}_${data[j]}_${hexData}_${_startAddrWrite(j * 2)}';
+          data[j] =
+              '${_startAddrHeader(j * 2)}_${data[j]}_${hexData}_${_startAddrWrite(j * 2)}';
+        }
       }
+    } on Exception catch (e) {
+      errData = e.toString();
     }
 
     return data;
