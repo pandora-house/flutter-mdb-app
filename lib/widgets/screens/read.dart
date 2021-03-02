@@ -6,15 +6,15 @@ import 'package:test_app/block/socket_bloc.dart';
 import 'package:test_app/block/socket_event.dart';
 import 'package:validators/validators.dart';
 
-class ReadWidgetWidget extends StatefulWidget {
+class ReadWidget extends StatefulWidget {
   final bloc;
-  ReadWidgetWidget({Key key, this.bloc}) : super(key: key);
+  ReadWidget({Key key, this.bloc}) : super(key: key);
 
   @override
-  _ReadWidgetWidgetState createState() => _ReadWidgetWidgetState();
+  _ReadWidgetState createState() => _ReadWidgetState();
 }
 
-class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
+class _ReadWidgetState extends State<ReadWidget>
     with TickerProviderStateMixin {
   Map<String, dynamic> _data;
 
@@ -58,8 +58,8 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
         builder: (context, AsyncSnapshot<String> snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
-              if (_socketBloc.getConnect == true) {
-                return CircularProgressIndicator();
+              if (_socketBloc.connecting) {
+                return const CircularProgressIndicator();
               } else {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -80,6 +80,8 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
                     style: Theme.of(context).textTheme.headline3,
                   ),
                 );
+              } else if (_socketBloc.connecting) {
+                return const CircularProgressIndicator();
               } else {
                 _data = jsonDecode(snapshot.data);
                 return Column(
@@ -164,11 +166,10 @@ class _ReadWidgetWidgetState extends State<ReadWidgetWidget>
         return GestureDetector(
           onTap: () {
             bool showPopup = (bloc.getSettings['Function']['value'] ==
-                        'F01 coil status (0x)' ||
-                    (bloc.getSettings['Function']['value'] ==
-                            'F03 holding register (4x)') &&
-                        bloc.mdb.getDataType().contains('16')) &&
-                bloc.getConnect;
+                    'F01 coil status (0x)' ||
+                (bloc.getSettings['Function']['value'] ==
+                        'F03 holding register (4x)') &&
+                    bloc.mdb.getDataType().contains('16'));
             if (showPopup) {
               _popUpDialog(bloc, item);
             }
